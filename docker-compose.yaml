@@ -1,0 +1,37 @@
+version: '3.4'
+
+services:
+  geost-sdk:
+      build:
+        context: .
+        dockerfile: phonebot.Dockerfile
+        network: host
+        args:
+          - PROJECT_URL=ssh://git@github.com/jdgrazia/phonebot.git
+          - PROJECT_NAME=phonebot
+          - BRANCH_NAME=master
+      image: phonebot:1.0.0
+      container_name: phonebot
+      volumes:
+        - ${PUB_KEY_PATH}:/root/.ssh/id_rsa.pub
+        - ${PRIV_KEY_PATH}:/root/.ssh/id_rsa
+        - ${GIT_CFG_PATH}:/root/.gitconfig
+        - geost-sdk-data:/root/
+      command:
+        - tail
+        - -f
+        - /dev/null
+      ulimits:
+          nproc: 2048
+          rtprio: 99
+      cap_add:
+        - SYS_NICE
+      environment:
+        - PYTHONUNBUFFERED=1
+      sysctls:
+          fs.mqueue.msg_max: 1000
+
+# Explicitly define the persisent volume for your sdk data storage
+volumes:
+  geost-sdk-data:
+    external: false
